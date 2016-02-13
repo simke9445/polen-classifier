@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import precision_recall_curve, average_precision_score
-from sklearn.preprocessing import binarize
+from binarizer import binarize
 
 
 def fscore(clf, X_test, y_test):
