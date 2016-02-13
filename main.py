@@ -76,6 +76,7 @@ for i in range(min(y), max(y) + 1):
 X_leftover = []
 y_leftover = []
 for i in range(min(y), max(y) + 1):
+    k = 1
     X_current_class = X[y == i]
     y_current_class = y[y == i]
 
@@ -87,7 +88,7 @@ for i in range(min(y), max(y) + 1):
         k = 20
     else:
         if i == 0:
-            k = 6
+            k = 4
 
     # under-sample the current class
     X = np.row_stack((X, X_current_class[0:k * under_sample, :]))
@@ -123,6 +124,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # scale the test set with training set mean & variance
 # and add the leftover ones to the test set
+
 X_leftover = (X_leftover - std.mean_) / std.var_
 y_test = np.concatenate((y_leftover, y_test), axis=0)
 X_test = np.row_stack((X_leftover, X_test))
@@ -143,12 +145,11 @@ for i in range(0, 100):
 """
 
 # RDF prediction model
-clf = RandomForestClassifier(class_weight='balanced', n_estimators=500)
+clf = RandomForestClassifier(class_weight='balanced', n_estimators=1000)
 
 # plot learning curves
 cv = ShuffleSplit(X.shape[0], n_iter=40,
                   test_size=0.2, random_state=0)
-
 title = "Learning Curves (Random Forests)"
 plot_learning_curve(clf, title, X, y, ylim=(0.7, 1.01), cv=cv, n_jobs=1)
 
@@ -159,6 +160,5 @@ clf.fit(X_train, y_train)
 fscore(clf, X_test, y_test)
 
 
-# TODO: Plot learning curves
 
 # TODO: Exploratory data analysis, manual feature creation(hate this part)
