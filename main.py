@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 import pandas as pd
-from sklearn.cross_validation import train_test_split
+from sklearn.cross_validation import train_test_split, ShuffleSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import PolynomialFeatures
@@ -12,7 +12,9 @@ from sklearn.utils import shuffle
 from binarizer import binarize
 from fscore import fscore
 
-## preprocess the input data
+from learning_curve import plot_learning_curve
+
+# preprocess the input data
 df = pd.read_csv("polen_data.csv")
 
 # shuffle the dataset
@@ -57,6 +59,7 @@ sel = VarianceThreshold(threshold=0.1)
 X = sel.fit_transform(X)
 print('Without low var features shape(X) = ', np.shape(X))
 
+# hack, because we have to few instances of both c2 and c3
 y[y == 3] = 2
 
 # get the minimum sample
@@ -69,7 +72,7 @@ for i in range(min(y), max(y) + 1):
 for i in range(min(y), max(y) + 1):
     print('class ', i, ' samples = ', sum(y == i))
 
-# unders-ample each of the oversampled classes
+# under-sample each of the oversampled classes
 X_leftover = []
 y_leftover = []
 for i in range(min(y), max(y) + 1):
@@ -84,7 +87,7 @@ for i in range(min(y), max(y) + 1):
         k = 20
     else:
         if i == 0:
-            k = 1 / 4
+            k = 6
 
     # under-sample the current class
     X = np.row_stack((X, X_current_class[0:k * under_sample, :]))
@@ -110,7 +113,7 @@ print('y_leftover size = ', np.shape(y_leftover))
 for i in range(min(y), max(y) + 1):
     print('class ', i, ' samples after undersampling = ', sum(y == i))
 
-# scale the features so that we're left features who got 0 mean and variance 1
+# scale the features to 0 mean and variance 1
 std = StandardScaler()
 X = std.fit_transform(X)
 
@@ -119,7 +122,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y)
 
 # scale the test set with training set mean & variance
-# and add the leftover ones for testing
+# and add the leftover ones to the test set
 X_leftover = (X_leftover - std.mean_) / std.var_
 y_test = np.concatenate((y_leftover, y_test), axis=0)
 X_test = np.row_stack((X_leftover, X_test))
@@ -130,8 +133,7 @@ for i in range(min(y), max(y) + 1):
 for i in range(min(y), max(y) + 1):
     print('class ', i, ' test samples = ', sum(y_test == i))
 
-
-# blend try
+# try with blending multiple ensembles
 """
 best = 0
 for i in range(0, 100):
@@ -141,11 +143,21 @@ for i in range(0, 100):
 """
 
 # RDF prediction model
-clf = RandomForestClassifier(n_estimators=5000, class_weight='balanced')
+clf = RandomForestClassifier(class_weight='balanced', n_estimators=500)
+
+# plot learning curves
+cv = ShuffleSplit(X.shape[0], n_iter=40,
+                  test_size=0.2, random_state=0)
+
+title = "Learning Curves (Random Forests)"
+plot_learning_curve(clf, title, X, y, ylim=(0.7, 1.01), cv=cv, n_jobs=1)
+
+# train the model
 clf.fit(X_train, y_train)
 
 # fscore plot
 fscore(clf, X_test, y_test)
+
 
 # TODO: Plot learning curves
 
