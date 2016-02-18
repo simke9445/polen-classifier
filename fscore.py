@@ -4,13 +4,11 @@ from sklearn.metrics import precision_recall_curve, average_precision_score
 from binarizer import binarize
 
 
-def fscore(clf, X_test, y_test):
+def fscore(y_test, y_score):
     # binarize output vector
     y_test = binarize(y_test)
     print('y_test binarized shape = ', np.shape(y_test))
     n_classes = np.shape(y_test)[1]
-
-    y_score = clf.predict_proba(X_test)
 
     # Compute Precision-Recall and plot curve
     precision = dict()

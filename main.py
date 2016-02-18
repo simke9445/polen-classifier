@@ -153,12 +153,12 @@ cv = ShuffleSplit(X.shape[0], n_iter=40,
 title = "Learning Curves (Random Forests)"
 plot_learning_curve(clf, title, X, y, ylim=(0.7, 1.01), cv=cv, n_jobs=1)
 
+
 # train the model
 clf.fit(X_train, y_train)
 
+# predict the test classes
+y_score = clf.predict_proba(X_test)
+
 # fscore plot
-fscore(clf, X_test, y_test)
-
-
-
-# TODO: Exploratory data analysis, manual feature creation(hate this part)
+fscore(y_test, y_score)
