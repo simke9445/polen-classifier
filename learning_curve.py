@@ -5,6 +5,19 @@ from sklearn.learning_curve import learning_curve
 
 def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
                         n_jobs=1, train_sizes=np.linspace(.1, 1.0, 5)):
+    """
+
+    :param estimator: estimator model for predicting the input values
+    :param title: graph title
+    :param X: training matrix, contains all the training examples
+    :param y: output vectors for the training examples
+    :param ylim: space for y-axis on the graph
+    :param cv: cross validation subsets
+    :param n_jobs: number of threads to spawn for execution of the algorithm
+    :param train_sizes: sizes of the subsets used for plotting the learning curve
+    :return: plot object
+    """
+
     # plot the test and traning learning curve.
     plt.figure()
     plt.title(title)

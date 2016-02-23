@@ -5,6 +5,13 @@ from binarizer import binarize
 
 
 def fscore(y_test, y_score):
+    """
+
+    :param y_test: output vector - predictions on the test set
+    :param y_score: output vector which contains probabilities for each contained estimator
+    :return: plot object
+    """
+
     # binarize output vector
     y_test = binarize(y_test)
     print('y_test binarized shape = ', np.shape(y_test))

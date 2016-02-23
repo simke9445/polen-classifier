@@ -1,17 +1,17 @@
+import pickle
 import sys
-
 import numpy as np
 import pandas as pd
+
+from time import time
 from sklearn.cross_validation import train_test_split, ShuffleSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
-
 from binarizer import binarize
 from fscore import fscore
-
 from learning_curve import plot_learning_curve
 
 # preprocess the input data
@@ -27,6 +27,9 @@ del df["Unnamed: 0"], df["TENDENCIJA"]
 y = df['KONCENTRACIJA'].as_matrix()
 del df['KONCENTRACIJA']
 
+# output the column names
+print(df.columns.values.tolist())
+
 # binarize id columns
 id_cols = ["vrstaBiljke", "ID_VRSTE", "ID_LOKACIJE"]
 id_columns = df[id_cols].as_matrix()
@@ -41,13 +44,19 @@ for i in range(1, np.size(id_cols)):
 
 # transform to suitable representation
 X = df.as_matrix()
+
+# testing the shapes before and after the binarization
+print('before binarization X = ', X.shape)
+print('id_columns_binazried = ', id_columns_binarized.shape)
 X = np.column_stack((X, id_columns_binarized))
-# y = binarize(y)
+print('after binarization X = ', X.shape)
 
 # clear from n/a's
 clear_rows = ~np.isnan(X).any(axis=1)
 X = X[clear_rows]
 y = y[clear_rows]
+
+print('Normal shape(X) = ', np.shape(X))
 
 # create polynomial features
 poly = PolynomialFeatures(degree=2)
@@ -135,8 +144,8 @@ for i in range(min(y), max(y) + 1):
 for i in range(min(y), max(y) + 1):
     print('class ', i, ' test samples = ', sum(y_test == i))
 
-# try with blending multiple ensembles
 """
+# try with blending multiple ensembles
 best = 0
 for i in range(0, 100):
     current_score = blender(X_train, y_train, X_test, y_test)
@@ -144,15 +153,15 @@ for i in range(0, 100):
         best = current_score
 """
 
+
 # RDF prediction model
-clf = RandomForestClassifier(class_weight='balanced', n_estimators=1000)
+clf = RandomForestClassifier(class_weight='balanced', n_estimators=500, n_jobs=-1)
 
 # plot learning curves
 cv = ShuffleSplit(X.shape[0], n_iter=40,
                   test_size=0.2, random_state=0)
 title = "Learning Curves (Random Forests)"
 plot_learning_curve(clf, title, X, y, ylim=(0.7, 1.01), cv=cv, n_jobs=1)
-
 
 # train the model
 clf.fit(X_train, y_train)
@@ -162,3 +171,19 @@ y_score = clf.predict_proba(X_test)
 
 # fscore plot
 fscore(y_test, y_score)
+
+# saving the classifier
+with open('classifier.pickle', 'wb') as handle:
+    pickle.dump(clf, handle)
+
+# saving the standard scaler
+with open('scaler.pickle', 'wb') as handle:
+    pickle.dump(std, handle)
+
+# saving the polynomial transformer
+with open('polynomial-transformer.pickle', 'wb') as handle:
+    pickle.dump(poly, handle)
+
+# saving the variance feature selector
+with open('variance-threshholder.pickle', 'wb') as handle:
+    pickle.dump(sel, handle)

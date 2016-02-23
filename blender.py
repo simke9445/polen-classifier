@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from sklearn import metrics
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier, \
@@ -18,6 +19,15 @@ from fscore import fscore
 
 
 def blender(X_train, y_train, X_test, y_test):
+    """
+
+    :param X_train: training set
+    :param y_train: output vector for training set
+    :param X_test: test set
+    :param y_test: output vector for test set
+    :return: classification accracy score
+    """
+
     # our level 0 classifiers
 
     clfs = [
